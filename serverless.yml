@@ -2,23 +2,42 @@ service: lambda-xray
 
 frameworkVersion: ">=1.22.0 <2.0.0"
 
+
+plugins:
+  - serverless-python-requirements
+  - serverless-plugin-tracing
+
+# custom:
+#   pythonRequirements:
+#     dockerizePip: true
+
 provider:
   name: aws
   runtime: python3.6
   region: ap-northeast-1
   profile: myaws
+  tracing: true # enable tracing 
+  iamRoleStatements:
+  - Effect: "Allow"
+    Action:
+      - xray:PutTelemetryRecords
+      - xray:PutTraceSegments
+    Resource: "*"
 #  stage: dev
 
 #  environment:
 #    variable1: value1
 
-#package:
-#  include:
-#    - include-me.py
-#    - include-me-dir/**
-#  exclude:
-#    - exclude-me.py
-#    - exclude-me-dir/**
+package:
+  exclude:
+    - README.md
+    - .gitignore
+    - requirements.txt
+    - tests/**
+    - serverless.*
+    - node_modules/**
+    - package.json
+    - package-lock.json
 
 functions:
   hello:
@@ -28,6 +47,3 @@ functions:
       - http:
           path: /hello
           method: get
-
-#resources:
-#  Resources:
