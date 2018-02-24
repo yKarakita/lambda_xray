@@ -7,8 +7,7 @@ def hello(event, context):
     xray_recorder.begin_subsegment('response hello')
 
     body = {
-        "message": "Go Serverless v1.0! Your function executed successfully!",
-        "input": event
+        "message": "Hello!",
     }
 
     response = {
