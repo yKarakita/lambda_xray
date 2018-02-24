@@ -10,12 +10,16 @@ def hello(event, context):
         "message": "Hello!",
     }
 
+    status_code = 200
+
     response = {
-        "statusCode": 200,
+        "statusCode": status_code,
         "body": json.dumps(body)
     }
 
     # subsegment.put_metadata('key', dict, 'namespace')
-    # subsegment.put_annotation('key', 'value')
+    # subsegment.put_annotation('response_status_code', status_code)
+    subsegment = xray_recorder.current_subsegment()
+    subsegment.put_annotation('response_status_code', status_code)
 
     return response
