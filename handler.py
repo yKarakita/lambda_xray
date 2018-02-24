@@ -1,22 +1,26 @@
 import json
-import uuid
-import boto3
 import os
+
+import boto3
 from aws_xray_sdk.core import xray_recorder
 from aws_xray_sdk.core import patch
 
 patch(['boto3'])
 
-s3_client = boto3.client('s3')
+sns = boto3.resource('sns', 'ap-northeast-1')
+sns_client = boto3.client('sns')
 
-bucket_name = os.environ['S3_BUCKET']
+topic_arn = os.environ['SNS_TOPIC_ARN']
 
-
-@xray_recorder.capture('response hello')
+@xray_recorder.capture('handler')
 def hello(event, context):
-    body = event['queryStringParameters']['keyword']
+    keyword = event['queryStringParameters']['keyword']
 
-    put_object_into_s3(bucket_name, str(uuid.uuid4()), body)
+    sns_client.publish(
+        TopicArn=topic_arn,
+        Message=keyword,
+        Subject='object_body'
+    )
 
     response = {
         "statusCode": 200,
@@ -24,11 +28,3 @@ def hello(event, context):
     }
 
     return response
-
-
-@xray_recorder.capture('put_object')
-def put_object_into_s3(bucket_name, bucket_key, body):
-    subsegment = xray_recorder.current_subsegment()
-    response = s3_client.put_object(Bucket=bucket_name, Key=bucket_key, Body=body)
-    status_code = response['ResponseMetadata']['HTTPStatusCode']
-    subsegment.put_annotation('put_response', status_code)

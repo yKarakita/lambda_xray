@@ -13,6 +13,7 @@ plugins:
 
 custom:
   bucketName: ${self:service}-${opt:stage, 'dev'}
+  snsTopicName: ${self:service}-${opt:stage, 'dev'}
 
 provider:
   name: aws
@@ -22,6 +23,7 @@ provider:
   tracing: true # enable tracing 
   environment:
     S3_BUCKET: ${self:custom.bucketName}
+    # SNS_TOPIC: ${self:custom.snsTopicName}
 
   iamRoleStatements:
   - Effect: Allow
@@ -35,6 +37,11 @@ provider:
       - s3:GetObject
     Resource:
       - arn:aws:s3:::${self:provider.environment.S3_BUCKET}/*
+  - Effect: Allow
+    Action:
+      - sns:CreateTopic
+      - sns:Publish
+    Resource: "*"
 
 #  environment:
 #    variable1: value1
@@ -58,6 +65,15 @@ functions:
       - http:
           path: /hello
           method: get
+    environment:
+      SNS_TOPIC_ARN:
+        Ref: SNSTopicLambdaxraydev
+
+  putObject:
+    handler: put_s3.handler
+    events:
+      - sns: ${self:custom.snsTopicName}
+
 
 resources:
   Resources:
