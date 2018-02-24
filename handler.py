@@ -2,9 +2,9 @@ import json
 from aws_xray_sdk.core import xray_recorder
 
 
+@xray_recorder.capture('response hello decorator')
 def hello(event, context):
     # subsegment = xray_recorder.begin_subsegment('subsegment_name')
-    xray_recorder.begin_subsegment('response hello')
 
     body = {
         "message": "Hello!",
@@ -17,7 +17,5 @@ def hello(event, context):
 
     # subsegment.put_metadata('key', dict, 'namespace')
     # subsegment.put_annotation('key', 'value')
-
-    xray_recorder.end_subsegment()
 
     return response
